@@ -1,0 +1,35 @@
+apiVersion: skaffold/v2beta15
+kind: Config
+metadata:
+  name: rabbitmq-publisher
+build:
+  tagPolicy:
+    sha256: { }
+  artifacts:
+    - image: rmq/rabbitmq-publisher
+      custom:
+        buildCommand:
+          mvnw clean package
+          -Dquarkus.container-image.name=rabbitmq-publisher
+          -Dquarkus.container-image.group=rmq
+          -Dquarkus.container-image.tag=latest
+          -DskipTests=true
+        dependencies:
+          paths:
+            - ./pom.xml
+            - ./src/main/resources/application.properties
+deploy:
+  helm:
+    releases:
+      - name: rabbitmq-publisher
+        chartPath: src/main/charts
+        valuesFiles:
+          - src/main/charts/Values.yaml
+        artifactOverrides:
+          image: rmq/rabbitmq-publisher
+portForward:
+  - resourceType: deployment
+    resourceName: rabbitmq-publisher
+    namespace: default
+    port: 8080
+    localPort: 8080 # *Optional*

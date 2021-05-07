@@ -1,0 +1,24 @@
+# TODO: Image and replicas are not getting set properly, templating problem with helm
+image:
+  group: rmq
+  name: rabbitmq-publisher
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicas: 3
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+env:
+  - name: QUARKUS_RABBITMQCLIENT_USERNAME
+    value: "user"
+  - name: QUARKUS_RABBITMQCLIENT_PASSWORD
+    value: "5UHgT01hX9"
+  - name: QUARKUS_RABBITMQCLIENT_HOSTNAME
+    value: "rabbitmq"

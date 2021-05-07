@@ -1,0 +1,7 @@
+apiVersion: v2
+name: rabbitmq-publisher
+version: 1.0.0
+description: A Helm chart to build and deploy an app which publishes to rabbitmq
+keywords:
+  - runtimes
+  - quarkus

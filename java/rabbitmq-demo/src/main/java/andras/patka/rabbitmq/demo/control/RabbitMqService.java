@@ -35,27 +35,31 @@ public class RabbitMqService {
 
     private void setupQueues() {
         try {
-            // create a connection
+            log.info("Connecting to RabbitMq");
             Connection connection = rabbitMQClient.connect();
-            // create a channel
+
+            log.info("Creating the channel");
             channel = connection.createChannel();
+
             String primaryName = MessageType.PRIMARY.toString();
             String secondaryName = MessageType.SECONDARY.toString();
 
-            // declare exchanges and queues
+            log.info("Declaring exchange and queues");
             channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT, true);
             channel.queueDeclare(primaryName, true, false, false, null);
             channel.queueDeclare(secondaryName, true, false, false, null);
             channel.queueBind(primaryName, EXCHANGE_NAME, primaryName);
             channel.queueBind(secondaryName, EXCHANGE_NAME, secondaryName);
+            log.info("RabbitMq setup finished");
         } catch (IOException e) {
+            log.error("Could not connect to RabbitMq");
             throw new UncheckedIOException(e);
         }
     }
 
     public void send(String message, String type) {
         try {
-            // send a message to the exchange
+            log.info("Sending message to the exchange: " + EXCHANGE_NAME + ", to the queue: " + type);
             channel.basicPublish(EXCHANGE_NAME, type, null, message.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
