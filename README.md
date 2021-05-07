@@ -72,23 +72,34 @@ kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get
 kubectl proxy
 ```
 
+## Ingress controller (Nginx)
+
+```
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+helm install ingress-nginx ingress-nginx/ingress-nginx
+```
+
 The dashboard will be accessible at the following url: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
 
 # Deployments
 
 All deployments are managed with skaffold. Skaffold is an open source project from Google which handles deployments to a K8s cluster. The usage of it in this project is a sort of wrapper around helm.
 
-## Rabbitmq
+## Infra - infrastructure needed for all services: Rabbitmq, Ingress controller
 
-Deploying rabbitmq is done with the help of the bitnami Rabbitmq chart: https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
+Deploying rabbitmq and nginx ingress controller is done with the help of the bitnami charts: 
+- https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
+- https://github.com/bitnami/charts/tree/master/bitnami/nginx-ingress-controller/#installing-the-chart
 
 ```bash
 # Add the bitnami charts helm repository to your local helm repositories
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
 # Deploy with the help of Skaffold (in root)
-skaffold run -m rabbitmq
-# or if you're in the rabbitmq folder, simply:
+skaffold run -m infra
+# or if you're in the infra folder, simply:
 skaffold run
 
 # port forward in order to access rabbitmq from outside the cluster:
@@ -99,4 +110,27 @@ kubectl port-forward --namespace default svc/rabbitmq 15672:15672
 
 # get password for rabbitmq
 echo "Password      : $(kubectl get secret --namespace default rabbitmq -o jsonpath="{.data.rabbitmq-password}" | base64 --decode)"
+```
+
+## Deploying the Rabbitmq Publisher service (Quarkus, java)
+
+```bash
+# Without port forwarding
+skaffold run -m rabbitmq-publisher
+
+# With port forwarding
+skaffold run -m rabbitmq-publisher --port-forward=user
+```
+
+If skaffold was ran with the "--port-forwarding" option, then it automatically forwards the containers 8080 port to the host machine's 8080 port. i.e. the service will be available at localhost:8080.
+
+If skaffold was ran without the "--port-forwarding" option, then the port forwarding should be done manually:
+
+```bash
+# list all pods
+kubectl get pods
+
+# look for the pod name, copy it, then:
+# NOTE: pod name will probably be something else on your machine (instead of: "rabbitmq-publisher-77d7cc748f-9m65s")
+kubectl port-forward rabbitmq-publisher-77d7cc748f-9m65s 8080:8080
 ```

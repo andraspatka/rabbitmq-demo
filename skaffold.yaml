@@ -1,7 +1,9 @@
 apiVersion: skaffold/v2beta15
 kind: Config
 requires:
-  - configs: ["rabbitmq"]
-    path: rabbitmq/skaffold.yaml 
+  - configs: ["infra"]
+    path: infra/skaffold.yaml
+  - configs: ["rabbitmq-publisher"]
+    path: java/rabbitmq-demo/skaffold.yaml
 build: {}
 deploy: {}

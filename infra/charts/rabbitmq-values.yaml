@@ -39,7 +39,7 @@ image:
 
 ## String to fully override rabbitmq.fullname template
 ##
-# fullnameOverride:
+fullnameOverride: rabbitmq
 
 ## Force target Kubernetes version (using Helm capabilites if not set)
 ##
@@ -540,7 +540,7 @@ rbac:
 persistence:
   ## this enables PVC templates that will create one per pod
   ##
-  enabled: true
+  enabled: false
 
   ## rabbitmq data Persistent Volume Storage Class
   ## If defined, storageClassName: <storageClass>
@@ -960,9 +960,9 @@ volumePermissions:
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
     # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    limits: {}
-    #   cpu: 100m
-    #   memory: 128Mi
-    requests: {}
-    #   cpu: 100m
-    #   memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
