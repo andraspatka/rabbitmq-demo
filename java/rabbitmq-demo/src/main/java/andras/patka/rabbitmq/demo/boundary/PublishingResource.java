@@ -22,12 +22,21 @@ public class PublishingResource {
         String type = publishRequest.getType().toUpperCase();
         String message = publishRequest.getMessage();
 
+        String responseMessage = "";
+
         if (!MessageType.getMessageTypes().contains(type)) {
-            throw new BadRequestException("Type: " + publishRequest.getType() + " not supported. Try: 'primary' or 'secondary'");
+            throw new BadRequestException("Type: " + publishRequest.getType() + " not supported. Try: 'primary', 'secondary' or 'all'");
         }
 
-        rabbitMqService.send(message, type);
+        if (MessageType.ALL.toString().equals(type)) {
+            rabbitMqService.send(message);
+            responseMessage = "Message: " + message + " successfully transmitted to all binded queues.";
+        } else {
+            rabbitMqService.send(message, type);
+            responseMessage = "Message: " + message + " successfully transmitted to type: " + type;
+        }
 
-        return Response.ok("Message: " + message + " successfully transmitted to type: " + type).build();
+
+        return Response.ok(responseMessage).build();
     }
 }

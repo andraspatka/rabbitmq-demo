@@ -26,7 +26,8 @@ public class RabbitMqService {
 
     private Channel channel;
 
-    private final String EXCHANGE_NAME = "exchange";
+    private final String DIRECT_EXCHANGE = "direct";
+    private final String FANOUT_EXCHANGE = "fanout";
 
     public void onApplicationStart(@Observes StartupEvent event) {
         // on application start prepare the queues and message listener
@@ -45,11 +46,15 @@ public class RabbitMqService {
             String secondaryName = MessageType.SECONDARY.toString();
 
             log.info("Declaring exchange and queues");
-            channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT, true);
+            channel.exchangeDeclare(DIRECT_EXCHANGE, BuiltinExchangeType.DIRECT, true);
+            channel.exchangeDeclare(FANOUT_EXCHANGE, BuiltinExchangeType.FANOUT, true);
             channel.queueDeclare(primaryName, true, false, false, null);
             channel.queueDeclare(secondaryName, true, false, false, null);
-            channel.queueBind(primaryName, EXCHANGE_NAME, primaryName);
-            channel.queueBind(secondaryName, EXCHANGE_NAME, secondaryName);
+            channel.queueBind(primaryName, DIRECT_EXCHANGE, primaryName);
+            channel.queueBind(secondaryName, DIRECT_EXCHANGE, secondaryName);
+
+            channel.queueBind(primaryName, FANOUT_EXCHANGE, primaryName);
+            channel.queueBind(secondaryName, FANOUT_EXCHANGE, secondaryName);
             log.info("RabbitMq setup finished");
         } catch (IOException e) {
             log.error("Could not connect to RabbitMq");
@@ -57,10 +62,30 @@ public class RabbitMqService {
         }
     }
 
+    /**
+     * Sends message to a Direct exchange.
+     *
+     * @param message The message to send.
+     * @param type    The routing key for the queue to which the message will be sent to.
+     */
     public void send(String message, String type) {
         try {
-            log.info("Sending message to the exchange: " + EXCHANGE_NAME + ", to the queue: " + type);
-            channel.basicPublish(EXCHANGE_NAME, type, null, message.getBytes(StandardCharsets.UTF_8));
+            log.info("Sending message to the exchange: " + DIRECT_EXCHANGE + ", to the queue: " + type);
+            channel.basicPublish(DIRECT_EXCHANGE, type, null, message.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * Sends message to a fanout exchange i.e. all binded queues receive it
+     *
+     * @param message Message to send
+     */
+    public void send(String message) {
+        try {
+            log.info("Sending message to the exchange: " + FANOUT_EXCHANGE + ", to all queues");
+            channel.basicPublish(FANOUT_EXCHANGE, "", null, message.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
