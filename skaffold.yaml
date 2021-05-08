@@ -7,5 +7,7 @@ requires:
     path: java/rabbitmq-demo/skaffold.yaml
   - configs: ["rabbitmq-consumer-primary"]
     path: python/skaffold.yaml
+  - configs: ["rabbitmq-consumer-secondary"]
+    path: elixir/skaffold.yaml
 build: {}
 deploy: {}

@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rabbitmq-consumer-secondary
+  name: rabbitmq-consumer-secondary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq-consumer-secondary
+  template:
+    metadata:
+      labels:
+        app: rabbitmq-consumer-secondary
+    spec:
+      containers:
+        - name: rabbitmq-consumer-secondary
+          image: rmq/rabbitmq-consumer-secondary:latest
+          imagePullPolicy: IfNotPresent
+          resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+          env:
+  {{- toYaml .Values.env | nindent 12 }}

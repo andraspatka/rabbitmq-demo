@@ -135,11 +135,37 @@ kubectl get pods
 kubectl port-forward rabbitmq-publisher-77d7cc748f-9m65s 8080:8080
 ```
 
+Calling the publisher service:
+
+```bash
+# Send message to both queues
+curl -X POST -H "Content-Type: application/json" -d '{"type":"all", "message":"hello, all!"}' http://localhost:8080/publish
+
+# Send message only to the primary queue
+curl -X POST -H "Content-Type: application/json" -d '{"type":"primary", "message":"send message just to python!"}' http://localhost:8080/publish
+
+# Send message only to the secondary queue
+curl -X POST -H "Content-Type: application/json" -d '{"type":"secondary", "message":"send message just to elixir!"}' http://localhost:8080/publish
+```
+
 ## Deploying the Rabbitmq Consumer service (Python, consumes the "primary" queue)
 
 ```bash
 # Without port forwarding
 skaffold run -m rabbitmq-consumer-primary
+
+# Getting the logs
+kubectl logs <pod_name>
+
+# Get the pod name with
+kubectl get pods
+```
+
+## Deploying the Rabbitmq Consumer service (Elixir, consumes the "secondary" queue)
+
+```bash
+# Without port forwarding
+skaffold run -m rabbitmq-consumer-secondary
 
 # Getting the logs
 kubectl logs <pod_name>
