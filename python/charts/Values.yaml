@@ -22,3 +22,7 @@ env:
     value: "5UHgT01hX9"
   - name: RABBITMQ_HOST
     value: "rabbitmq"
+  - name: PYTHONUNBUFFERED # Otherwise logs dont show up
+    value: "1"
+  - name: PYTHONIOENCODING
+    value: "UTF-8"

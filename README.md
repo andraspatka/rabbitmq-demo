@@ -134,3 +134,16 @@ kubectl get pods
 # NOTE: pod name will probably be something else on your machine (instead of: "rabbitmq-publisher-77d7cc748f-9m65s")
 kubectl port-forward rabbitmq-publisher-77d7cc748f-9m65s 8080:8080
 ```
+
+## Deploying the Rabbitmq Consumer service (Python, consumes the "primary" queue)
+
+```bash
+# Without port forwarding
+skaffold run -m rabbitmq-consumer-primary
+
+# Getting the logs
+kubectl logs <pod_name>
+
+# Get the pod name with
+kubectl get pods
+```
