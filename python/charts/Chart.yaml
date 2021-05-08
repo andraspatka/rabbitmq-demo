@@ -1,0 +1,8 @@
+apiVersion: v2
+name: rabbitmq-consumer-primary
+version: 1.0.0
+description: A Helm chart to build and deploy an app which consumes from rabbitmq
+keywords:
+  - runtimes
+  - python
+  - pika

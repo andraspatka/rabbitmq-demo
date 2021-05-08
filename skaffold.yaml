@@ -5,5 +5,7 @@ requires:
     path: infra/skaffold.yaml
   - configs: ["rabbitmq-publisher"]
     path: java/rabbitmq-demo/skaffold.yaml
+  - configs: ["rabbitmq-consumer-primary"]
+    path: python/skaffold.yaml
 build: {}
 deploy: {}

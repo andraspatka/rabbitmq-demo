@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rabbitmq-consumer-primary
+  name: rabbitmq-consumer-primary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq-consumer-primary
+  template:
+    metadata:
+      labels:
+        app: rabbitmq-consumer-primary
+    spec:
+      containers:
+        - name: rabbitmq-consumer-primary
+          image: rmq/rabbitmq-consumer-primary:latest
+          imagePullPolicy: IfNotPresent
+          resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+          env:
+  {{- toYaml .Values.env | nindent 12 }}

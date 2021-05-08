@@ -1,0 +1,19 @@
+apiVersion: skaffold/v2beta15
+kind: Config
+metadata:
+  name: rabbitmq-consumer-primary
+build:
+  tagPolicy:
+    sha256: { }
+  artifacts:
+    - image: rmq/rabbitmq-consumer-primary
+  local: {}
+deploy:
+  helm:
+    releases:
+      - name: rabbitmq-consumer-primary
+        chartPath: charts
+        valuesFiles:
+          - charts/Values.yaml
+        artifactOverrides:
+          image: rmq/rabbitmq-consumer-primary
