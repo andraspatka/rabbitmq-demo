@@ -1,6 +1,6 @@
 # rabbitmq-demo
 
-Demo project using 3 microservices which are connected with rabbitmq. All services are dockerized and can be deployed to K8s using skaffold/helm
+Demo project using 3 microservices which are connected with rabbitmq. All services are dockerized and can be deployed to K8s using skaffold/helm.
 
 Assignment:
 1. Develop 3 web services A, B, C, each in a different technology (python, php, .net core or java).
@@ -9,7 +9,70 @@ Assignment:
 4. Add a loadbalancer based on nginx in front of the 3 instances
 5. All services should be containerized via Docker
 
-# Setting up
+# Solution
+
+All of the services were dockerized and for all of them skaffold was configured, in order to make deployments to Kubernetes easier. Helm charts were also used. They might seem like a bit of an overkill for such small project, but still, they bring some advantages:
+- Structuring of deployment configurations into different files
+- Values.yaml - single source of truth for deployment relevant values
+- Easy interface for deployments: helm install, helm uninstall
+- Skaffold support
+
+The services were not deployed directly with helm, skaffold was used for the deployments, for which "helm" was configured as the deploy type.
+
+Service overview:
+- rabbitmq-publisher: 
+    - Quarkus (Java) service
+    - Defines three message types: 'primary', 'secondary', 'all'. The choice of these names was arbitrary. 
+    - 'primary' message type publishes messages to the 'PRIMARY' queue
+    - 'secondary' message type publishes messages to the 'SECONDARY' queue
+    - 'all' message type publishes messages to both queues
+    - 'direct' exchange type was used for the 'primary' and 'secondary' message types
+    - 'fanout exchange was used for the 'all' message type.
+    - dockerization was done with the help of 'jib'
+    - runs with 3 replicas
+    - Load balancer was not additionally configured as Kubernetes already provides a sort of load balancing built-in.
+- rabbitmq-consumer-primary:
+    - Python service
+    - Consumes messages from the 'primary' queue
+    - dockerization done with plain old Dockerfiles
+    - Runs with 1 replica
+- rabbitmq-consumer-secondary:
+    - Elixir service
+    - Consumes messages from the 'secondary' queue
+    - dockerization done with plain old Dockerfiles
+    - Runs with 1 replica
+
+Folder structure:
+- dashboard
+    - kubernetes config files for configuring RBAC for the kubernetes dashboard
+- docs
+    - documentation
+- elixir
+    - elixir 'rabbitmq-consumer-secondary' service
+- infra
+    - contains configuration for 'RabbitMQ' and 'Nginx Ingress Controller' deployment using bitnami helm charts and skaffold. 'Nginx Ingress Controller' is currently unused.
+- java
+    - quarkus 'rabbitmq-publisher' service
+- python
+    - python 'rabbitmq-consumer-primary' service
+
+Demonstration:
+
+![Demo](docs/screenshot.PNG)
+
+On this screenshot it can be seen, that all services were deployed ('rabbitmq-publisher' in upper left side, 'rabbitmq-consumer-primary' in the middle and 'rabbitmq-consumer-secondary' on the right side, curl calls to the publisher service in the lower left side).
+
+Three calls are made to the publisher service, the first one goes out to both services. The consumer services display the message accordingly. 
+
+The second call goes out only to the primary consumer service, which then displays the message. 
+
+The third call goes out to the secondary consumer service, which also displays the message accordingly. 
+
+Note that, when the 'primary' or 'secondary' message types are used, only one service consumes them.
+
+The following headings 'Technical details' and 'Deployments' contain further details about the configurations.
+
+# Technical details
 
 ## Requirements
 
@@ -21,7 +84,7 @@ Assignment:
 
 ## Kubeapps
 
-Kubeapps is recommended as it provides a dashboard for K8s. It is not required, everything that can be done with Kubeapps can be done with kubectl.
+Kubeapps is recommended as it provides a dashboard for K8s. It is not required, everything that can be done with Kubeapps can be done with kubectl. Kubernetes Dashboard is favored to Kubeapps for the use of a dashboard. Nevertheless, the steps to setting up Kubeapps are the following:
 
 ```bash
 # Installing kubeapps in namespace "kubeapps" (recommended to install it in a different namespace, as it starts a lot of pods)
@@ -72,16 +135,20 @@ kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get
 kubectl proxy
 ```
 
+The dashboard will be accessible at the following url: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+
 ## Ingress controller (Nginx)
 
-```
+```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 
 helm install ingress-nginx ingress-nginx/ingress-nginx
+
+# or with skaffold (in root path)
+skaffold run -m infra
 ```
 
-The dashboard will be accessible at the following url: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
 
 # Deployments
 
@@ -172,4 +239,13 @@ kubectl logs <pod_name>
 
 # Get the pod name with
 kubectl get pods
+```
+
+## Deploying everything at once
+
+The beauty of Skaffold is that all configurations can be deployed at once with a simple command:
+
+```bash
+# Run it in the root folder
+skaffold run
 ```
