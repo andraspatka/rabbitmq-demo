@@ -19,6 +19,6 @@ env:
   - name: RABBITMQ_USER
     value: "user"
   - name: RABBITMQ_PASSWORD
-    value: "5UHgT01hX9"
+    value: "local-password"
   - name: RABBITMQ_HOST
     value: "rabbitmq"

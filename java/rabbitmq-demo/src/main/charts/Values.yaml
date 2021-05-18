@@ -19,6 +19,6 @@ env:
   - name: QUARKUS_RABBITMQCLIENT_USERNAME
     value: "user"
   - name: QUARKUS_RABBITMQCLIENT_PASSWORD
-    value: "5UHgT01hX9"
+    value: "local-password"
   - name: QUARKUS_RABBITMQCLIENT_HOSTNAME
     value: "rabbitmq"
